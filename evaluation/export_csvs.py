@@ -23,7 +23,7 @@ def export_csvs(df, output_folder):
             {
                 "work_id": work_ids,
                 "openalex_link": "https://openalex.org/works/" + work_ids,
-                "pdf_link": pdf_base + output_folder + "\\" + work_ids,
+                "pdf_link": pdf_base + output_folder + "\\" + work_ids + ".pdf",
                 "done": False,
             }
         )
