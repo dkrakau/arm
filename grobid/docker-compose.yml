@@ -1,0 +1,26 @@
+services:
+
+  grobid:
+    image: grobid/grobid:0.9.1-full
+    container_name: grobid
+    ports:
+      - "8070:8070"
+    environment:
+      - JAVA_OPTS=-Xmx4g
+      - GROBID__concurrency=4
+    volumes:
+      - grobid-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8070/api/isalive"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+
+volumes:
+  grobid-data:
