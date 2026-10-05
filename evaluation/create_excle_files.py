@@ -2,9 +2,9 @@ import pandas as pd
 from pathlib import Path
 
 
-def export_excels(folder):
-    csv_dir = Path(folder) / "csv"
-    out = Path(folder) / "excel"
+def export_excels(csv_folder="csv", output_folder="excel"):
+    csv_dir = Path(csv_folder)
+    out = Path(output_folder)
     out.mkdir(parents=True, exist_ok=True)
 
     files_by_field = {}
@@ -20,8 +20,7 @@ def export_excels(folder):
 
 
 def main():
-    export_excels("open_access")
-    export_excels("not_open_access")
+    export_excels()
 
 
 if __name__ == "__main__":

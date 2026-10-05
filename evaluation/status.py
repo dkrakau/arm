@@ -26,25 +26,34 @@ PAPER_TYPES = [
 ]
 
 
-def count_done(folder):
+def is_true(series):
+    return series.astype(str).str.strip().str.lower().isin(["true", "wahr"])
+
+
+def count_done(folder="excel"):
     rows = []
-    for xlsx in sorted((Path(folder) / "excel").glob("*.xlsx")):
+    for xlsx in sorted(Path(folder).glob("*.xlsx")):
         if xlsx.stem not in RESEARCH_FIELDS:
             continue
         sheets = pd.read_excel(xlsx, sheet_name=None)
         for ptype, df in sheets.items():
             if ptype not in PAPER_TYPES:
                 continue
-            done = df["done"].astype(str).str.strip().str.lower().isin(["true", "wahr"])
-            rows.append(
-                {
-                    "access": folder,
-                    "research_field": xlsx.stem,
-                    "paper_type": ptype,
-                    "done": done.sum(),
-                    "total": len(df),
-                }
-            )
+            done = is_true(df["done"])
+            open_access = is_true(df["open_access"])
+            for access, mask in [
+                ("open_access", open_access),
+                ("not_open_access", ~open_access),
+            ]:
+                rows.append(
+                    {
+                        "access": access,
+                        "research_field": xlsx.stem,
+                        "paper_type": ptype,
+                        "done": (done & mask).sum(),
+                        "total": mask.sum(),
+                    }
+                )
     return rows
 
 
@@ -72,7 +81,7 @@ def print_overview(df, title):
 
 
 def main():
-    df = pd.DataFrame(count_done("open_access") + count_done("not_open_access"))
+    df = pd.DataFrame(count_done())
     df["research_field"] = df["research_field"].str.replace("-", " ")
     df["paper_type"] = df["paper_type"].str.replace("-", " ").str.replace("_", "/")
 
