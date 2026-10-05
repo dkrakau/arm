@@ -76,9 +76,9 @@ def main():
     df["research_field"] = df["research_field"].str.replace("-", " ")
     df["paper_type"] = df["paper_type"].str.replace("-", " ").str.replace("_", "/")
 
-    print_overview(df, "combined")
-    print_overview(df[df["access"] == "open_access"], "open_access")
     print_overview(df[df["access"] == "not_open_access"], "not_open_access")
+    print_overview(df[df["access"] == "open_access"], "open_access")
+    print_overview(df, "combined")
 
 
 if __name__ == "__main__":
