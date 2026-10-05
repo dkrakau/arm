@@ -5,6 +5,7 @@ ERROR_LOG_DIR = Path("pdf/open_access/error_log")
 ERROR_LOG_DIR.mkdir(exist_ok=True)
 
 
+# Just for debugging pdf downloads
 def main():
 
     df = pd.read_csv(ERROR_LOG_DIR / "errors.log")
