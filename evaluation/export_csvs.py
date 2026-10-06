@@ -3,29 +3,30 @@ from pathlib import Path
 from sqlalchemy import create_engine, text
 
 DATABASE_URL = "postgresql+psycopg2://postgres:admin@localhost:5432/openalex"  # test
-CITE_TABLE = "openalex.work"
-CITE_ID_COLUMN = "id"
-CITE_COLUMN = "cited_by_count"
+WORK_TABLE = "openalex.work"
 
 
-def fetch_cites(work_ids):
-    """Return a DataFrame with work_id and cite for the given work_ids."""
+def fetch_work_info(work_ids):
+    """Return a DataFrame with work_id, title, cite and publication_date for the given work_ids."""
     engine = create_engine(DATABASE_URL)
     query = text(
-        f"SELECT {CITE_ID_COLUMN} AS work_id, {CITE_COLUMN} AS cite "
-        f"FROM {CITE_TABLE} "
-        f"WHERE {CITE_ID_COLUMN} = ANY(:ids)"
+        "SELECT id AS work_id, "
+        "title, "
+        "cited_by_count AS cite, "
+        "(publication_date AT TIME ZONE 'UTC')::date AS publication_date "
+        f"FROM {WORK_TABLE} "
+        "WHERE id = ANY(:ids)"
     )
     with engine.connect() as conn:
-        cites = pd.read_sql(query, conn, params={"ids": work_ids})
-    return cites.drop_duplicates(subset="work_id")
+        info = pd.read_sql(query, conn, params={"ids": work_ids})
+    return info.drop_duplicates(subset="work_id")
 
 
-def add_cites(df):
+def add_work_info(df):
     df["work_id"] = df["work_id"].astype(str)
     ids = df["work_id"].drop_duplicates().tolist()
-    cites = fetch_cites(ids)
-    df = df.merge(cites, on="work_id", how="left", validate="many_to_one")
+    info = fetch_work_info(ids)
+    df = df.merge(info, on="work_id", how="left", validate="many_to_one")
     df["cite"] = df["cite"].astype("Int64")
 
     missing = df["cite"].isna().sum()
@@ -48,10 +49,12 @@ def export_csvs(df, output_folder="csv"):
         result = pd.DataFrame(
             {
                 "work_id": work_ids,
+                "title": group["title"],
                 "openalex_link": "https://openalex.org/works/" + work_ids,
                 "pdf_link": pdf_base + subfolder + "\\" + work_ids + ".pdf",
                 "open_access": group["open_access"],
                 "cite": group["cite"],
+                "publication_date": group["publication_date"],
                 "done": False,
             }
         )
@@ -68,7 +71,7 @@ def main():
     df_not_open_access["open_access"] = False
 
     df = pd.concat([df_open_access, df_not_open_access], ignore_index=True)
-    df = add_cites(df)
+    df = add_work_info(df)
 
     export_csvs(df)
 
