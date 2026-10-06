@@ -1,5 +1,5 @@
 =HYPERLINK(B2;"link")
 =HYPERLINK(C2;"pdf")
 
-=$E2="False"
-=$E2="True"
+=$F2="False"
+=$F2="True"
