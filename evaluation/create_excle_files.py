@@ -16,6 +16,7 @@ def export_excels(csv_folder="csv", output_folder="excel"):
         with pd.ExcelWriter(out / f"{field}.xlsx") as writer:
             for ptype, csv_file in files:
                 df = pd.read_csv(csv_file, dtype=str)  # to keep values as "False"
+                df["cite"] = pd.to_numeric(df["cite"])  # to keep cite as number
                 df.to_excel(writer, sheet_name=ptype[:31], index=False)
 
 
