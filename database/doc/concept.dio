@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="yxypTZxRMI5ks84V4dAq" name="Page-1">
-        <mxGraphModel dx="1413" dy="969" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#ffffff" math="0" shadow="1">
+        <mxGraphModel dx="678" dy="291" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#ffffff" math="0" shadow="1">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -117,8 +117,8 @@
                 <mxCell id="82" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;LLM-Extractor&lt;/b&gt;&lt;br&gt;&lt;div&gt;Automatic categorization of TXT files&lt;/div&gt;&lt;div&gt;by research field and paper type&lt;/div&gt;" vertex="1">
                     <mxGeometry height="60" width="330" x="33.120000000000005" y="1490" as="geometry"/>
                 </mxCell>
-                <mxCell id="83" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="&lt;b&gt;CSV&lt;/b&gt;&lt;div&gt;research_field: str,&lt;/div&gt;&lt;div&gt;paper_type: str,&lt;/div&gt;&lt;div&gt;research_focus: str,&lt;/div&gt;&lt;div&gt;method: str,&lt;/div&gt;&lt;div&gt;mentioned_systems: list,&lt;/div&gt;&lt;div&gt;indexing_methods: list,&lt;/div&gt;&lt;div&gt;application_domain: str,&lt;/div&gt;&lt;div&gt;results_summary: list,&lt;/div&gt;&lt;div&gt;limitations: list,&lt;/div&gt;&lt;div&gt;research_gaps: list&lt;/div&gt;" vertex="1">
-                    <mxGeometry height="180" width="330" x="34.84" y="1690" as="geometry"/>
+                <mxCell id="83" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="&lt;b&gt;CSV&lt;/b&gt;&lt;div&gt;research_field: str,&lt;/div&gt;&lt;div&gt;paper_type: str,&lt;/div&gt;&lt;div&gt;relevance: str,&lt;/div&gt;&lt;div&gt;relevance_reason: str,&lt;/div&gt;&lt;div&gt;research_focus: str,&lt;/div&gt;&lt;div&gt;method: str,&lt;/div&gt;&lt;div&gt;mentioned_systems: list,&lt;/div&gt;&lt;div&gt;indexing_methods: list,&lt;/div&gt;&lt;div&gt;application_domain: str,&lt;/div&gt;&lt;div&gt;results_summary: list,&lt;/div&gt;&lt;div&gt;limitations: list,&lt;/div&gt;&lt;div&gt;research_gaps: list&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="210" width="330" x="34.84" y="1690" as="geometry"/>
                 </mxCell>
                 <mxCell id="100" edge="1" parent="1" source="96" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="99">
                     <mxGeometry relative="1" as="geometry">
