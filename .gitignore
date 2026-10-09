@@ -6,8 +6,6 @@ openalex/requester/outputs-*
 database/__pycache__
 database/scripts/__pycache__
 pdf
-evaluation/csv
-evaluation/excel
 
 # ignored files
 openalex/openalex-csv-files/*.csv
