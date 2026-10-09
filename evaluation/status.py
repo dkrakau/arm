@@ -32,7 +32,7 @@ def is_true(series):
 
 def count_done(folder="excel"):
     rows = []
-    for xlsx in sorted(Path(folder).glob("*.xlsx")):
+    for xlsx in sorted(Path(folder).glob("*.xlsm")):
         if xlsx.stem not in RESEARCH_FIELDS:
             continue
         sheets = pd.read_excel(xlsx, sheet_name=None)
