@@ -1,5 +1,6 @@
-=HYPERLINK(C2;"link")
-=HYPERLINK(D2;"pdf")
+=HYPERLINK(B2;"link")
+=HYPERLINK(C2;"pdf")
 
-=$H2="False"
-=$H2="True"
+=$R2="False"
+=$R2="True"
+=A2=""
