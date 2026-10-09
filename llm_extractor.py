@@ -82,11 +82,15 @@ PAPER_TYPES = [
     "Other",
 ]
 
+RELEVANCE_TYPES = ["high", "middle", "low"]
+
 # JSON-Schema-Felder mit ihrem erwarteten Typ, fuer Validierung nach dem Parsen.
 # "str" -> darf String ODER null sein. "list" -> muss eine Liste sein (ggf. leer).
 SCHEMA = {
     "research_field": "str",  # fachliche Disziplin, siehe RESEARCH_FIELDS
     "paper_type": "str",  # Art des Papers, siehe PAPER_TYPES
+    "relevance": "str",  # Relevanz des Papers: high, middle, low
+    "relevance_reason": "str",  # 1-2 Saetze Begruendung der Relevanz-Einstufung
     "research_focus": "str",  # zentrales Thema/Problem/Fragestellung des Papers
     "method": "str",  # Ansatz/Methode, mit der das Problem geloest wurde
     "mentioned_systems": "list",
@@ -97,10 +101,26 @@ SCHEMA = {
     "research_gaps": "list",  # einzelne offene Fragen/Future Work als Liste
 }
 
-SYSTEM_PROMPT = """You are a meticulous research assistant helping to compile a research survey on \
-the current state of vector databases. The papers you analyze may be written in English or German, \
-and may come from a wide range of academic disciplines -- vector databases are applied as a tool \
-across many fields (e.g. medicine, geology, biology), not only computer science.
+SYSTEM_PROMPT = """You are a meticulous research assistant helping to compile a survey paper on \
+the current state of research on vector databases. Your most important task is to judge how \
+relevant each paper is for this survey. The papers may be written in English or German and may \
+come from many academic disciplines -- vector databases are applied as a tool across many fields \
+(e.g. medicine, geology, biology), not only computer science.
+
+Relevance criteria -- the only question is how much the paper is ABOUT vector databases \
+themselves (including their core technology: vector indexing and similarity / nearest neighbor \
+search). Judge the paper's actual subject, not how often keywords appear:
+- "high": Vector databases are the MAIN SUBJECT of the paper. The paper proposes, improves, \
+analyzes, benchmarks, or surveys vector databases or their core technology.
+- "middle": Vector databases are a SUBSTANTIAL PART of the paper but not its main subject. The \
+main subject is something else (e.g. an AI application, a RAG pipeline, a domain-specific \
+system), but the paper examines or discusses the vector database in real depth, e.g. compares \
+systems or index types, or reports measurements about it.
+- "low": The paper is mainly about another topic, e.g. AI, large language models, machine \
+learning, embeddings, or a domain application. Vector databases are only used as a tool or \
+mentioned in passing, or not addressed at all.
+A paper about AI, LLMs, or RAG is NOT relevant just because it uses a vector database. \
+If you are torn between two levels, choose the lower one.
 
 Rules you MUST follow:
 1. Base every field STRICTLY on what is explicitly stated in the given text. Never use outside \
@@ -110,19 +130,25 @@ knowledge, never guess, never infer information the text does not state.
 - never translate or rephrase these names.
 4. For "research_field", choose EXACTLY ONE value from this list: {research_fields}.
 5. For "paper_type", choose EXACTLY ONE value from this list: {paper_types}.
-6. List fields ("mentioned_systems", "indexing_methods", "limitations", "research_gaps") must \
+6. For "relevance", choose EXACTLY ONE value from this list: {relevance_types}, applying the \
+relevance criteria above.
+7. "relevance_reason" must be 1 to 2 sentences naming the specific aspect of the paper that \
+justifies the chosen relevance level. It is never null.
+8. List fields ("mentioned_systems", "indexing_methods", "limitations", "research_gaps") must \
 always be a JSON array. Use an empty array [] if nothing relevant is found - never use null or \
 the string "null" for a list field. Each list item should be a short, self-contained phrase \
 (e.g. one limitation per item, not a merged paragraph).
-7. Free-text string fields ("research_focus", "method", "application_domain") must be null (JSON \
+9. Free-text string fields ("research_focus", "method", "application_domain") must be null (JSON \
 null, not an empty string) if the text does not address that aspect at all, and should be kept \
 to at most 3 short sentences.
-8. "results_summary" is the one exception to rule 7's length limit: it must be 3 to 5 sentences \
+10. "results_summary" is the one exception to rule 9's length limit: it must be 3 to 5 sentences \
 describing how the paper's research focus was addressed and what the results were.
-9. Output ONLY a single valid JSON object. No markdown fences, no commentary, no text before \
+11. Output ONLY a single valid JSON object. No markdown fences, no commentary, no text before \
 or after the JSON.
 """.format(
-    research_fields=", ".join(RESEARCH_FIELDS), paper_types=", ".join(PAPER_TYPES)
+    research_fields=", ".join(RESEARCH_FIELDS),
+    paper_types=", ".join(PAPER_TYPES),
+    relevance_types=", ".join(RELEVANCE_TYPES),
 )
 
 USER_PROMPT_TEMPLATE = """Extract the following information from the paper text below and \
@@ -138,7 +164,9 @@ respond with a JSON object using EXACTLY these keys:
     "application_domain": "the domain vector search is applied to WITHIN the paper, e.g. NLP, image search, bioinformatics, geospatial data",
     "results_summary": "3-5 sentences: how the research focus was addressed and what the results/findings were",
     "limitations": ["each limitation explicitly mentioned by the authors, as a separate item"],
-    "research_gaps": ["each open question/future work item explicitly named by the authors, as a separate item"]
+    "research_gaps": ["each open question/future work item explicitly named by the authors, as a separate item"],
+    "relevance_reason": "1-2 sentences: which aspect of the paper justifies the relevance level",
+    "relevance": "relevance for the survey according to the relevance criteria, one value from: __RELEVANCE_TYPES__"
 }}
 
 Paper text:
@@ -150,9 +178,11 @@ Paper text:
 # Feste Kategorienlisten in den Platzhalter-Text einsetzen (per .replace(),
 # NICHT .format(), damit die JSON-Klammern {{ }} und der spaetere {text}-
 # Platzhalter fuer build_messages() unangetastet bleiben).
-USER_PROMPT_TEMPLATE = USER_PROMPT_TEMPLATE.replace(
-    "__RESEARCH_FIELDS__", ", ".join(RESEARCH_FIELDS)
-).replace("__PAPER_TYPES__", ", ".join(PAPER_TYPES))
+USER_PROMPT_TEMPLATE = (
+    USER_PROMPT_TEMPLATE.replace("__RESEARCH_FIELDS__", ", ".join(RESEARCH_FIELDS))
+    .replace("__PAPER_TYPES__", ", ".join(PAPER_TYPES))
+    .replace("__RELEVANCE_TYPES__", ", ".join(RELEVANCE_TYPES))
+)
 
 
 def build_messages(text: str) -> list:
@@ -249,7 +279,7 @@ def parse_response(raw: str) -> dict:
                 return json.loads(match.group(0))
             except json.JSONDecodeError:
                 pass
-        return {"kategorie": "PARSE_FEHLER", "begruendung": raw[:300], "konfidenz": 0}
+        raise ValueError(f"Kein gueltiges JSON: {raw[:300]!r}")
 
 
 def extract_work_id(path: Path) -> str:
@@ -364,5 +394,5 @@ def main():
 if __name__ == "__main__":
     main()
 
-# py llm_extractor.py grobid/open_access/compact --output llm/llm_open_access.csv
-# py llm_extractor.py grobid/not_open_access/compact --output llm/llm_not_open_access.csv
+# py llm_extractor.py grobid/open_access/compact --output llm/llm_open_access_with_relevance.csv
+# py llm_extractor.py grobid/not_open_access/compact --output llm/llm_not_open_access_with_relevance.csv
